@@ -273,6 +273,153 @@ def cancel_reservation(
     """.strip()
 
 
+# =============================================================================
+# COMPLAINT TOOLS
+# =============================================================================
+
+
+@function_tool
+def create_complaint_case(
+    context: RestaurantCustomerContext,
+    issue_summary: str,
+    severity: str = "medium",
+) -> str:
+    valid_severities = {"low", "medium", "high", "critical"}
+    normalized = severity.lower().strip()
+    if normalized not in valid_severities:
+        normalized = "medium"
+
+    complaint_cases = _get_store("restaurant_complaints")
+    case_id = f"CMP-{random.randint(10000, 99999)}"
+    complaint_cases[case_id] = {
+        "customer_name": context.name,
+        "issue_summary": issue_summary,
+        "severity": normalized,
+        "status": "open",
+    }
+
+    return f"""
+불만 접수가 완료되었습니다.
+케이스 번호: {case_id}
+심각도: {normalized}
+내용: {issue_summary}
+    """.strip()
+
+
+@function_tool
+def offer_refund_solution(
+    context: RestaurantCustomerContext,
+    case_id: str,
+    refund_percent: int = 50,
+) -> str:
+    complaint_cases = _get_store("restaurant_complaints")
+    case = complaint_cases.get(case_id)
+    if not case:
+        return f"{case_id} 케이스를 찾지 못했습니다."
+
+    if refund_percent < 10:
+        refund_percent = 10
+    if refund_percent > 100:
+        refund_percent = 100
+
+    case["refund_offer"] = refund_percent
+    return f"""
+환불/보상 제안을 등록했습니다.
+케이스 번호: {case_id}
+환불 제안: 결제금액의 {refund_percent}%
+고객 동의 후 실제 환불을 진행해 주세요.
+    """.strip()
+
+
+@function_tool
+def offer_discount_solution(
+    context: RestaurantCustomerContext,
+    case_id: str,
+    discount_percent: int = 30,
+    valid_days: int = 30,
+) -> str:
+    complaint_cases = _get_store("restaurant_complaints")
+    case = complaint_cases.get(case_id)
+    if not case:
+        return f"{case_id} 케이스를 찾지 못했습니다."
+
+    if discount_percent < 10:
+        discount_percent = 10
+    if discount_percent > 70:
+        discount_percent = 70
+
+    if valid_days < 7:
+        valid_days = 7
+
+    coupon_code = f"SORRY{random.randint(100, 999)}"
+    case["discount_offer"] = {
+        "discount_percent": discount_percent,
+        "valid_days": valid_days,
+        "coupon_code": coupon_code,
+    }
+
+    return f"""
+할인 보상안을 등록했습니다.
+케이스 번호: {case_id}
+쿠폰코드: {coupon_code}
+할인율: {discount_percent}%
+유효기간: 발급 후 {valid_days}일
+    """.strip()
+
+
+@function_tool
+def arrange_manager_callback(
+    context: RestaurantCustomerContext,
+    case_id: str,
+    callback_phone: str,
+    preferred_time: str,
+) -> str:
+    complaint_cases = _get_store("restaurant_complaints")
+    case = complaint_cases.get(case_id)
+    if not case:
+        return f"{case_id} 케이스를 찾지 못했습니다."
+
+    callback_ticket = f"CALL-{random.randint(1000, 9999)}"
+    case["manager_callback"] = {
+        "ticket": callback_ticket,
+        "phone": callback_phone,
+        "preferred_time": preferred_time,
+    }
+
+    return f"""
+매니저 콜백이 접수되었습니다.
+케이스 번호: {case_id}
+콜백 티켓: {callback_ticket}
+연락처: {callback_phone}
+희망 시간: {preferred_time}
+    """.strip()
+
+
+@function_tool
+def escalate_complaint_case(
+    context: RestaurantCustomerContext,
+    case_id: str,
+    escalation_reason: str,
+) -> str:
+    complaint_cases = _get_store("restaurant_complaints")
+    case = complaint_cases.get(case_id)
+    if not case:
+        return f"{case_id} 케이스를 찾지 못했습니다."
+
+    escalation_id = f"ESC-{random.randint(10000, 99999)}"
+    case["status"] = "escalated"
+    case["escalation_id"] = escalation_id
+    case["escalation_reason"] = escalation_reason
+
+    return f"""
+심각 불만이 에스컬레이션되었습니다.
+케이스 번호: {case_id}
+에스컬레이션 ID: {escalation_id}
+사유: {escalation_reason}
+처리팀: 운영 매니저/점장
+    """.strip()
+
+
 class AgentToolUsageLoggingHooks(AgentHooks):
     async def on_tool_start(
         self,

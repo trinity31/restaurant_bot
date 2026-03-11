@@ -1,6 +1,7 @@
 from agents import Agent, RunContextWrapper
 
 from models import RestaurantCustomerContext
+from output_guardrails import restaurant_output_guardrail
 from tools import (
     AgentToolUsageLoggingHooks,
     confirm_order,
@@ -40,4 +41,7 @@ order_agent = Agent(
         get_order_status,
     ],
     hooks=AgentToolUsageLoggingHooks(),
+    output_guardrails=[
+        restaurant_output_guardrail,
+    ],
 )

@@ -1,6 +1,7 @@
 from agents import Agent, RunContextWrapper
 
 from models import RestaurantCustomerContext
+from output_guardrails import restaurant_output_guardrail
 from tools import (
     AgentToolUsageLoggingHooks,
     cancel_reservation,
@@ -40,4 +41,7 @@ reservation_agent = Agent(
         cancel_reservation,
     ],
     hooks=AgentToolUsageLoggingHooks(),
+    output_guardrails=[
+        restaurant_output_guardrail,
+    ],
 )

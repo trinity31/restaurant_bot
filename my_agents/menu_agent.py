@@ -1,6 +1,7 @@
 from agents import Agent, RunContextWrapper
 
 from models import RestaurantCustomerContext
+from output_guardrails import restaurant_output_guardrail
 from tools import (
     AgentToolUsageLoggingHooks,
     get_allergy_info,
@@ -39,4 +40,7 @@ menu_agent = Agent(
         get_allergy_info,
     ],
     hooks=AgentToolUsageLoggingHooks(),
+    output_guardrails=[
+        restaurant_output_guardrail,
+    ],
 )

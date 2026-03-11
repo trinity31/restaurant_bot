@@ -2,7 +2,12 @@ import asyncio
 
 import dotenv
 import streamlit as st
-from agents import InputGuardrailTripwireTriggered, Runner, SQLiteSession
+from agents import (
+    InputGuardrailTripwireTriggered,
+    OutputGuardrailTripwireTriggered,
+    Runner,
+    SQLiteSession,
+)
 
 from models import RestaurantCustomerContext
 from my_agents.triage_agent import triage_agent
@@ -21,9 +26,10 @@ customer_context = RestaurantCustomerContext(
 
 
 HANDOFF_MESSAGES = {
-    "Menu Agent": "메뉴 담당자에게 연결합니다...",
-    "Order Agent": "주문 담당자에게 연결합니다...",
-    "Reservation Agent": "예약 담당자에게 연결합니다...",
+    "Menu Agent": "메뉴 전문가에게 연결합니다...",
+    "Order Agent": "주문 전문가에게 연결합니다...",
+    "Reservation Agent": "예약 전문가에게 연결합니다...",
+    "Complaints Agent": "불만 해결 전문가에게 연결합니다...",
 }
 
 
@@ -81,10 +87,16 @@ async def run_agent(message: str):
                         text_placeholder = st.empty()
                         response = ""
         except InputGuardrailTripwireTriggered:
-            st.write("레스토랑 관련 질문(메뉴, 주문, 예약)만 도와드릴 수 있어요.")
+            st.write(
+                "저는 레스토랑 관련 질문에 대해서만 도와드리고 있어요. "
+                "메뉴를 확인하거나, 예약하거나, 음식을 주문할 수 있어요."
+            )
+        except OutputGuardrailTripwireTriggered:
+            text_placeholder.empty()
+            st.write("해당 질문에 대한 답변은 표시할 수 없습니다.")
 
 
-message = st.chat_input("메뉴, 주문, 예약 관련 요청을 입력하세요.")
+message = st.chat_input("메뉴, 주문, 예약, 불만 상담 요청을 입력하세요.")
 if message:
     with st.chat_message("user"):
         st.write(message)

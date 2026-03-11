@@ -12,6 +12,13 @@ class RestaurantCustomerContext(BaseModel):
 
 class InputGuardRailOutput(BaseModel):
     is_off_topic: bool
+    has_inappropriate_language: bool
+    reason: str
+
+
+class RestaurantOutputGuardRailOutput(BaseModel):
+    lacks_professional_tone: bool
+    contains_internal_info: bool
     reason: str
 
 
